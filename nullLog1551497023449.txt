@@ -1,0 +1,12 @@
+
+Sat Mar 02 00:23:37 BRT 2019: JSON Settings file: C://temp//settings.json
+Sat Mar 02 00:23:37 BRT 2019: Log: C://temp//logs//
+Sat Mar 02 00:23:37 BRT 2019: Loading configs...
+Sat Mar 02 00:23:37 BRT 2019: objects.Settings@27fa135a
+Sat Mar 02 00:23:38 BRT 2019: Killing chrome process!
+Sat Mar 02 00:23:38 BRT 2019: Welcome to Auto video maker! enjoy
+Sat Mar 02 00:23:38 BRT 2019: [1] - Create Twitch clip compilation by game
+Sat Mar 02 00:23:38 BRT 2019: [2] - Create Twitch clip compilation by page url
+Sat Mar 02 00:23:38 BRT 2019: [3] - Create Twitch clip compilation by Clip link list
+Sat Mar 02 00:23:38 BRT 2019: [4] - Open Youtube Video config file
+Sat Mar 02 00:23:38 BRT 2019: [0] - Exit
