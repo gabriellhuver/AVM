@@ -56,7 +56,7 @@ public class ConfigUtilTest {
     public static final String RenderAESetings = "\"BestConfig\"";
     public static final String CompositionAEName = "\"main\"";
 
-    @Test
+    //@Test
     public void testSomeMethod() {
         try {
             Settings settings = new Settings();

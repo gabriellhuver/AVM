@@ -6,9 +6,13 @@
 package avm;
 
 import core.AVMWorkflow;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Scanner;
 import objects.Settings;
+import org.openqa.selenium.WebDriver;
 import util.ConfigUtil;
+import util.WebDriverTool;
 import util.WriteLogFile;
 
 /**
@@ -40,27 +44,48 @@ public class AVM {
 
     public static void loadConfig() {
         try {
-
+            System.out.println(Settings.loadingStr);
+            Thread.sleep(1250);
             AVMWorkflow.log("Loading configs...");
             settings = ConfigUtil.getSettings(jsonStg);
             AVMWorkflow.log(settings.toString());
             AVMWorkflow.log("JSON Settings file: " + jsonStg);
-        } catch (Exception e) {
+        } catch (FileNotFoundException | InterruptedException e) {
             AVMWorkflow.log("Erro on load Settings!");
         }
     }
 
     private static void createLog() {
-        WriteLogFile.writeLog(new ArrayList<String>(), logPath);
+        WriteLogFile.writeLog(new ArrayList<>(), logPath);
 
     }
 
     public static void addExitHook() {
         Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
             public void run() {
                 WriteLogFile.writeLog(AVMWorkflow.logList, avm.AVM.logPath);
             }
         });
+    }
+
+    public static void openbrowser() {
+        WebDriver driver = null;
+        try {
+            driver = WebDriverTool.setupDriver();
+
+            driver.get("https://github.com/gabriellhuver/AVM");
+            Scanner scan = new Scanner(System.in);
+            System.out.println("Press key to continue...");
+            scan.next();
+        } catch (Exception e) {
+            driver.close();
+        } finally {
+
+            driver.close();
+            AVMWorkflow.go();
+        }
+
     }
 
 }

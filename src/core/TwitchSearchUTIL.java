@@ -29,47 +29,41 @@ import objects.YoutubeVideo;
 public class TwitchSearchUTIL {
 
     public WebDriver driver;
+    public List<String> links;
 
     public List<String> getListClipsByURL(String url, int count) throws FileNotFoundException {
         List<String> Alllinks = new ArrayList<>();
+        try {
+            driver = WebDriverTool.setupDriver();
+            driver.get(url);
+            // driver.findElement(By.xpath("//*[@id=\"root\"]/div/div[2]/div/main/div[1]/div[3]/div/div/div/div[2]/div[2]/div[1]/div[1]/div/div/div")).click();
+            // driver.findElement(By.xpath("//*[@id=\"root\"]/div/div[2]/div/main/div[1]/div[3]/div/div/div/div[2]/div[2]/div[1]/div[1]/div/div/div/div[2]/div[1]/div/div[3]/div/div/div[2]/div/label")).click();
 
-        while (Alllinks.isEmpty()) {
-            try {
-                driver = WebDriverTool.setupDriver();
-                driver.get(url);
-                // driver.findElement(By.xpath("//*[@id=\"root\"]/div/div[2]/div/main/div[1]/div[3]/div/div/div/div[2]/div[2]/div[1]/div[1]/div/div/div")).click();
-                // driver.findElement(By.xpath("//*[@id=\"root\"]/div/div[2]/div/main/div[1]/div[3]/div/div/div/div[2]/div[2]/div[1]/div[1]/div/div/div/div[2]/div[1]/div/div[3]/div/div/div[2]/div/label")).click();
-
-                WebElement videoBox = driver
-                        .findElement(By.xpath("//*[@id=\"root\"]/div/div[2]/div/main/div[1]/div[3]/div/div/div/div[3]"));
-                List<WebElement> findElements = videoBox.findElements(By.tagName("a"));
-                List<String> links = new ArrayList<>();
-                int i = 1;
-                for (WebElement webElement : findElements) {
-                    if (webElement.getAttribute("href").contains("clip")) {
-                        if (!Alllinks.contains(webElement.getAttribute("href"))) {
-                            if (i <= count) {
-                                Alllinks.add(webElement.getAttribute("href"));
-                                i++;
-                            }
-
+            WebElement videoBox = driver
+                    .findElement(By.xpath("//*[@id=\"root\"]/div/div[2]/div/main/div[1]/div[3]/div/div/div/div[3]"));
+            List<WebElement> findElements = videoBox.findElements(By.tagName("a"));
+            int i = 1;
+            for (WebElement webElement : findElements) {
+                if (webElement.getAttribute("href").contains("clip")) {
+                    if (!Alllinks.contains(webElement.getAttribute("href"))) {
+                        if (i <= count) {
+                            Alllinks.add(webElement.getAttribute("href"));
+                            i++;
                         }
+
                     }
                 }
-
-            } catch (Exception e) {
-                AVMWorkflow.log(e.getMessage());
-                driver.close();
-                getListClipsByURL(url, count);
-            } finally {
-                driver.close();
-                if (Alllinks.isEmpty()) {
-                    getListClipsByURL(url, count);
-                }
-
             }
+
+        } catch (Exception e) {
+            AVMWorkflow.log(e.getMessage());
+            driver.close();
+        } finally {
+            driver.close();
+
         }
 
+        links = Alllinks;
         return Alllinks;
     }
 

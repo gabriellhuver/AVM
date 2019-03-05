@@ -27,7 +27,7 @@ public class YoutubeVideo {
     private String introFile;
     private List<String> linkClips;
     private String convertedFile;
-
+    
     public void addLinksToDescription() {
         //String desc = "Twitch Auto Upload example\\r\\nCreated By GH\\r\\n\\r\\n**********************************\\r\\n\\r\\nJava\\r\\nWebdriver Selenium\\r\\nAfter Effects CC 2018\\r\\n***********************************\\r\\nITS JUST A TEST!!!!!!\\r\\nList of social media profiles\\r\\nWebsite\\r\\nContact info (email, address, etc.)\\r\\nITS JUST A TEST!!!!!!\\r\\n***********************************\\r\\nITS JUST A TEST!!!!!!\\r\\nCredits";
 

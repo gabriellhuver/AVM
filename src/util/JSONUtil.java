@@ -19,12 +19,28 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
+import objects.UploadList;
 
 /**
  *
  * @author gab00
  */
 public class JSONUtil {
+
+    public static String saveListUpload(String jsonFilePath, List<UploadList> list) throws IOException {
+        Gson gson = new Gson();
+        String json = gson.toJson(list);
+        log(json);
+        try (Writer writer = new OutputStreamWriter(new FileOutputStream(jsonFilePath), "UTF-8")) {
+            gson.toJson(list, writer);
+            log("JSON FILE SAVED -> " + jsonFilePath);
+            log(list.toString());
+
+        }
+
+        return jsonFilePath;
+
+    }
 
     public static String saveConfig(String jsonFilePath, YoutubeVideo video) throws FileNotFoundException {
 
