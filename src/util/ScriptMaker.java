@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,10 +25,11 @@ import java.util.logging.Logger;
  */
 public class ScriptMaker {
 
-    static String scriptAddSequence = "add_sequence(\"C:/temp/TempVideoRenderizer/VideoIntroName\");";
+    static String scriptAddSequence = "add_sequence(\"C:/temp/avm/TempVideoRenderizer/VideoIntroName\");";
     static String scriptIntro = "var intro = myComp.layers.add(selection[SelectionCount]);intro.startTime = 0;scaleLayers(intro);";
-    static String scriptVideo = "var videoSelectionCount = myComp.layers.add(selection[Count]);videoSelectionCount.startTime = intro.outPoint;scaleLayers(videoCount);";
-    static String scriptEnd = "var end = myComp.layers.add(selection[##]);end.startTime = video!!.outPoint;scaleLayers(end);";
+    static String scriptVideo = "var videoSelectionCount = myComp.layers.add(selection[Count]);videoSelectionCount.startTime = transCC.outPoint;scaleLayers(videoCount);";
+    static String scriptEnd = "var end = myComp.layers.add(selection[##]);end.startTime = trans##.outPoint;scaleLayers(end);";
+    static String scriptTrans = "var transCount = myComp.layers.add(selection[LASTINDEX]);transCount.startTime = LASTVIDEO.outPoint;scaleLayers(transCount);";
     static String convertCommand = "HandBrakeCLI -i \"%FROM%\" -o \"%TO%\" -e nvenc_h264 -q 22 -r 60 -B 64 -O  > |LOG| ";
 
     public static String createTempBatEncodeFile(String from, String to) {
@@ -43,7 +43,7 @@ public class ScriptMaker {
             writer.newLine();
             writer.write("exit");
             writer.close();
-            
+
             log("Batch file created!");
             return fileName;
         } catch (IOException ex) {
@@ -80,8 +80,7 @@ public class ScriptMaker {
                 if (string.contains("############## Imports")) {
 
                     writer.newLine();
-                    writer.write("//-------------- Imports Added ------------");
-                    writer.newLine();
+
                     for (int i = 1; i <= videoCount; i++) {
                         if (i == 1) {
                             writer.write(scriptAddSequence.replace("VideoIntroName", i + ".mov"));
@@ -91,11 +90,14 @@ public class ScriptMaker {
                             writer.newLine();
                         } else {
                             writer.write(scriptAddSequence.replace("VideoIntroName", i + ".mp4"));
-                            writer.newLine();
+
                         }
                         writer.newLine();
 
                     }
+                    writer.newLine();
+                    writer.write(scriptAddSequence.replace("VideoIntroName", "t.mov"));
+                    writer.newLine();
                     writer.write("//-------------- Imports Added ------------");
                     writer.newLine();
                 } else if (string.contains("############# Sequence clips")) {
@@ -109,19 +111,27 @@ public class ScriptMaker {
                                 writer.newLine();
                             }
                             writer.newLine();
-
+                            String[] trans = scriptTrans.replace("LASTINDEX", (videoCount) + "").replace("LASTVIDEO", "intro").replace("Count", i + "").split(";");
+                            for (String tran : trans) {
+                                writer.write(tran + ";");
+                                writer.newLine();
+                            }
                         } else if (i == 2) {
                             //Segundo
-                            String[] replace = scriptVideo.replace("SelectionCount", (i - 1) + "").replace("Count", (i - 1) + "").split(";");
+                            String[] replace = scriptVideo.replace("SelectionCount", (i - 1) + "").replace("Count", (i - 1) + "").replace("CC", (i - 1) + "").split(";");
                             for (String kkk : replace) {
                                 writer.write(kkk + ";");
                                 writer.newLine();
                             }
                             writer.newLine();
-
+                            String[] trans = scriptTrans.replace("LASTINDEX", (videoCount) + "").replace("LASTVIDEO", "video" + (i - 1) + "").replace("Count", i + "").split(";");
+                            for (String tran : trans) {
+                                writer.write(tran + ";");
+                                writer.newLine();
+                            }
                         } else if (i == videoCount) {
                             // Ultimo
-                            String[] replace = scriptEnd.replace("##", (i - 1) + "").replace("!!", (i - 2) + "").split(";");
+                            String[] replace = scriptEnd.replace("##", (i - 1) + "").split(";");
                             for (String kkk : replace) {
                                 writer.write(kkk + ";");
                                 writer.newLine();
@@ -130,17 +140,23 @@ public class ScriptMaker {
 
                         } else {
                             //resto
-                            String[] replace = scriptVideo.replace("SelectionCount", (i - 1) + "").replace("intro", "video" + (i - 2)).replace("Count", (i - 1) + "").split(";");
+                            String[] replace = scriptVideo.replace("SelectionCount", (i - 1) + "").replace("intro", "video" + (i - 2)).replace("CC", (i - 1) + "").replace("Count", (i - 1) + "").split(";");
                             for (String kkk : replace) {
                                 writer.write(kkk + ";");
                                 writer.newLine();
                             }
                             writer.newLine();
-
+                            String[] trans = scriptTrans.replace("LASTINDEX", (videoCount) + "").replace("LASTVIDEO", "video" + (i - 1) + "").replace("Count", i + "").split(";");
+                            for (String tran : trans) {
+                                writer.write(tran + ";");
+                                writer.newLine();
+                            }
                         }
                         writer.newLine();
 
                     }
+                } else if (true) {
+
                 }
 
                 if (string.contains(";")
@@ -153,13 +169,11 @@ public class ScriptMaker {
 
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
             log(e.getMessage());
 
         } finally {
             try {
-                // Close the writer regardless of what happens...
                 writer.close();
             } catch (Exception e) {
                 log(e.getMessage());

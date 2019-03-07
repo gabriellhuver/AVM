@@ -1,7 +1,7 @@
 package util;
 
 import avm.AVM;
-import core.AVMWorkflow;
+import static core.AVMWorkflow.log;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
@@ -13,12 +13,12 @@ public class WebDriverTool {
 
     public static void killChromeProcess() {
         try {
-            AVMWorkflow.log("Killing chrome process!");
+            log("Killing chrome process!");
             Runtime.getRuntime().exec("taskkill /F /IM chromedriver.exe /T");
             Runtime.getRuntime().exec("taskkill /F /IM geckodriver.exe /T");
 
         } catch (IOException ex) {
-            AVMWorkflow.log(ex.getMessage());
+            log(ex.getMessage());
         }
 
     }
@@ -28,6 +28,8 @@ public class WebDriverTool {
             WebDriver driver;
 
             System.setProperty("webdriver.chrome.driver", AVM.settings.getChromeDriver());
+            log("loading chrome driver");
+            log("Chrome driver path: " + AVM.settings.getChromeDriver());
             ChromeOptions options = new ChromeOptions();
             // options.addArguments("--test-type");
             options.addArguments("--use-fake-ui-for-media-stream");
@@ -39,14 +41,15 @@ public class WebDriverTool {
             // capabilities.setCapability(ChromeOptions.CAPABILITY, options);
             options.addArguments("--mute-audio");
             options.addArguments("user-data-dir=" + AVM.settings.getChromeUserData());
-            AVMWorkflow.log("Init setup driver!!!");
-            AVMWorkflow.log("Options: " + options.toJson());
+            log("UserData: " + AVM.settings.getChromeUserData());
+            //AVMWorkflow.log("Options");
+            
             driver = new ChromeDriver(options);
             driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
+            log("chrome driver ready");
             return driver;
         } catch (Exception e) {
-            AVMWorkflow.log(e.getMessage());
-            e.printStackTrace();
+            log(e.getMessage());
             return null;
         }
     }

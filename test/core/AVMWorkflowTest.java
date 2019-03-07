@@ -6,10 +6,10 @@
 package core;
 
 import static avm.AVM.settings;
-import static core.AVMWorkflow.makeUpload;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.Test;
@@ -27,6 +27,15 @@ public class AVMWorkflowTest {
     }
 
     @Test
+    public void tt() throws InterruptedException{
+        long currentTimeMillis = System.currentTimeMillis();
+// String localPath = "C://temp//settings.json";
+        //System.out.println(localPath.split("/")[localPath.split("/").length-1]);;
+        Thread.sleep(new Random().nextInt(9999));
+        System.out.println((System.currentTimeMillis() - currentTimeMillis));
+    }
+    
+    //@Test
     public void testSomeMethod() {
         try {
             settings = ConfigUtil.getSettings("C://temp//settings.json");
@@ -39,11 +48,10 @@ public class AVMWorkflowTest {
         }
     }
     //@Test
-    public void tt(){
+    public void tst(){
         try {
             YoutubeVideo video = new YoutubeVideo();
             
-            video.setClipsPerComposition(5);
             List<String> links = new ArrayList<>();
             List<String> tags = new ArrayList<>();
             List<String> desc = new ArrayList<>();
@@ -55,9 +63,7 @@ public class AVMWorkflowTest {
             
             video.setStatus("PRIVATE");
             
-            video.setIntroFile("intro.mov");
             video.setProjectFile("output.mov");
-            video.setRenderConfig("\"BestOut\"");
             //video.setConvertedFile();
             JSONUtil.saveConfig("C://Temp//videos.json", video);
         } catch (FileNotFoundException ex) {

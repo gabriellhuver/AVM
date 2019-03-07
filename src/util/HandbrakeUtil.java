@@ -5,13 +5,12 @@
  */
 package util;
 
+import static avm.AVM.settings;
+import core.AVMWorkflow;
 import static core.AVMWorkflow.log;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import util.AfterEffectsUtil;
 
 /**
  *
@@ -40,10 +39,9 @@ public class HandbrakeUtil {
                 pb.directory(dir);
                 Process p = pb.start();
                 p.waitFor();
-            } catch (IOException ex) {
-                Logger.getLogger(HandbrakeUtil.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(HandbrakeUtil.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException | InterruptedException ex) {
+                log(ex.getMessage());
+
             }
         }).start();
         while (true) {
@@ -51,20 +49,27 @@ public class HandbrakeUtil {
                 File file = new File(avm.AVM.settings.getHandBrakeExec() + "//" + runBat.replace(".bat", ".txt"));
                 boolean fileIsNotLocked = file.renameTo(file);
                 if (fileIsNotLocked) {
-                    System.out.println("Convert finalized!");
+                    log("Convert finalized!");
                     Thread.sleep(5000);
                     try {
                         File f = new File(avm.AVM.settings.getFinalVideoPath().replace("finalVideo", "convertedFinalVideo"));
-                        AfterEffectsUtil.copyFileUsingStream(f, new File("C:\\temp\\Backup\\convertedFileBackup" + new Date().getTime() + ".mov"));
-                        avm.AVM.settings.setFinalVideoConvertedPath(f.getAbsolutePath());
+                        String name = settings.getMainVideoPath() + "\\Backup\\convertedFileBackup" + new Date().getTime() + ".mov";
+
+                        AVMWorkflow.video.setBackupFile(name);
+
+                        AfterEffectsUtil.copyFileUsingStream(f, new File(name));
+                        log("########################");
+                        log("file backup -> " + name);
+                        log("########################");
+
                     } catch (Exception e) {
-                        convertFile(runBat);
+                        log(e.getMessage());
                     }
                     break;
                 }
 
             } catch (Exception e) {
-                log("File not ready yet");
+                log(e.getMessage());
             }
         }
     }

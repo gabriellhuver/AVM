@@ -7,6 +7,7 @@ package util;
 
 import com.google.gson.Gson;
 import core.AVMWorkflow;
+import static core.AVMWorkflow.log;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -23,20 +24,16 @@ import objects.Settings;
 public class ConfigUtil {
 
     public static String saveSettings(String jsonFilePath, Settings setg) throws FileNotFoundException {
-
-        //1. Convert object to JSON string
+        log("Saving Settings on " + jsonFilePath);
         Gson gson = new Gson();
         String json = gson.toJson(setg);
-        System.out.println(json);
-
-        //2. Convert object to JSON string and save into a file directly
+        log(json);
         try (Writer writer = new OutputStreamWriter(new FileOutputStream(jsonFilePath), "UTF-8")) {
-
             gson.toJson(setg, writer);
             AVMWorkflow.log("JSON FILE SAVED -> " + jsonFilePath);
             AVMWorkflow.log(setg.toString());
         } catch (IOException e) {
-            e.printStackTrace();
+            log(e.getMessage());
         }
 
         return jsonFilePath;
@@ -49,10 +46,10 @@ public class ConfigUtil {
         try (Reader reader = new FileReader(videoConfigJSONPath)) {
 
             Settings setg = gson.fromJson(reader, Settings.class);
-            System.out.println("Loading Settings from -> " + videoConfigJSONPath);
+            log("Loading Settings from -> " + videoConfigJSONPath);
             return setg;
         } catch (IOException e) {
-            AVMWorkflow.log("Erro on get settings file");
+            log("Erro on get settings file");
             return null;
         }
     }

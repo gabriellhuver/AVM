@@ -15,15 +15,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
+import objects.LinkDatabase;
 import util.AfterEffectsUtil;
 import util.JSONUtil;
 import util.ScriptMaker;
@@ -39,33 +38,40 @@ public class AVMWorkflow {
     public static List<String> logList = new ArrayList<>();
     public static Scanner scan;
     public static TwitchSearchUTIL searchUTIL;
-    public static int filesToDownload = 7;
+    public static YoutubeVideo video;
+    public static String tempFileJSON;
+    public static String afterEffectsScriptFile = "";
 
     public static void go() {
         try {
             loading();
             scan = new Scanner(System.in);
             scan.useLocale(Locale.US);
-            log("[1] - Create Twitch clip compilation by game");
-            log("[2] - Create Twitch clip compilation by page url");
-            log("[3] - Create Twitch clip compilation by Clip link list");
-            log("[4] - Open Youtube Video config file");
-            log("[5] - Reload config");
-            log("[6] - Open chromedriver");
-
-            log("[0] - Exit");
+            printOptions();
             switch (scan.next()) {
                 case "1":
+                    log("Create Twitch clip compilation by game");
                     createClipByGame();
+                    go();
+
                     break;
                 case "2":
+                    log("Create Twitch clip compilation by page url");
                     createClipByUrl();
+                    go();
+
                     break;
                 case "3":
+                    log("Create Twitch clip compilation by Clip link list");
                     createClipByList();
+                    go();
+
                     break;
                 case "4":
+
                     openYoutubeVideoConfigCreatorGUI();
+                    go();
+
                     break;
                 case "5":
                     AVM.loadConfig();
@@ -73,6 +79,32 @@ public class AVMWorkflow {
                     break;
                 case "6":
                     AVM.openbrowser();
+
+                    go();
+                    break;
+                case "7": {
+                    createProject();
+                    go();
+                }
+                break;
+                case "8": {
+                    try {
+                        AfterEffectsUtil.renderTemplate();
+                    } catch (IOException ex) {
+                        Logger.getLogger(AVMWorkflow.class.getName()).log(Level.SEVERE, null, ex);
+                    } finally {
+                        go();
+
+                    }
+                }
+                break;
+                case "9":
+                    log("Creating batch file");
+                    String createTempBatEncodeFile = ScriptMaker.createTempBatEncodeFile(avm.AVM.settings.getFinalVideoPath(), avm.AVM.settings.getFinalVideoConvertedPath());
+                    log("Executing batch file");
+                    HandbrakeUtil.convertFile(createTempBatEncodeFile);
+                    go();
+
                     break;
                 case "0":
                     System.exit(1);
@@ -88,77 +120,120 @@ public class AVMWorkflow {
 
     }
 
+    public static void printOptions() {
+        System.out.println("[1] - Create Twitch clip compilation by game");
+        System.out.println("[2] - Create Twitch clip compilation by page url");
+        System.out.println("[3] - Create Twitch clip compilation by Clip link list");
+        System.out.println("[4] - Open Youtube Video config file");
+        System.out.println("[5] - Reload config");
+        System.out.println("[6] - Open chromedriver");
+        System.out.println("[7] - create project by " + settings.getAeScriptTemplate() + " template with " + settings.getFilesToDownload() + " clips");
+        System.out.println("[8] - Render template with " + settings.getAfterEffectsProjectFile());
+        System.out.println("[9] - Convert " + settings.getFinalVideoConvertedPath());
+        System.out.println("[0] - Exit");
+    }
+
     private static void loading() throws InterruptedException {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            WebDriverTool.killChromeProcess();
-            System.out.println("*****   TWITCH ROBOT  AUTO UPLOAD     ****");
-            log("Welcome to Auto video maker! enjoy");
-            searchUTIL = new TwitchSearchUTIL();
-            Thread.sleep(200);
-            createTempPath();
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(AVMWorkflow.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        WebDriverTool.killChromeProcess();
+        log("Welcome to Auto video maker! enjoy");
+        searchUTIL = new TwitchSearchUTIL();
+        Thread.sleep(200);
 
     }
 
-    private static void createClipByGame() {
+    public static void createClipByGame() {
         String game = JOptionPane.showInputDialog("Game ?");
+        log("creating clips of " + game);
         if (!game.equals("")) {
             String urlGame = "https://www.twitch.tv/directory/game/" + game.replace(" ", "%20") + "/clips?range=24hr";
-            //System.out.print("Clips per video: ");
-            filesToDownload = settings.getFilesToDownload();
-
-            if (filesToDownload > 0) {
-                createVideoByTwitchClipPageUrl(urlGame);
+            log("Search url: " + urlGame);
+            if (settings.getFilesToDownload() > 0) {
+                createVideoByTwitchClipPageUrl(urlGame, game);
 
             } else {
                 log("clips size 0");
             }
 
         }
+
     }
 
-    public static void createVideoByTwitchClipPageUrl(String urlGame) {
+    public static void createVideoByTwitchClipPageUrl(String urlGame, String game) {
         try {
-            List<String> clips = searchClips(urlGame);
-
-            makeDownload(clips);
-            // Copy files
-            try {
-                log("Copy files init.");
-
-                AfterEffectsUtil.copyFilesToPath(AVM.tempDownloadPath, true);
-            } catch (Exception e) {
-                log("Error on copy files.");
-            }
-
-            createProject();
-            AfterEffectsUtil.renderTemplate();
-            try {
-                avm.AVM.settings.setFinalVideoConvertedPath(avm.AVM.settings.getFinalVideoPath().replace("finalVideo", "convertedFinalVideo"));
-                String createTempBatEncodeFile = ScriptMaker.createTempBatEncodeFile(avm.AVM.settings.getFinalVideoPath(), avm.AVM.settings.getFinalVideoConvertedPath());
-                HandbrakeUtil.convertFile(createTempBatEncodeFile);
-            } catch (InterruptedException e) {
-                log("Erro on script or convert file");
-            } finally {
-                try {
-                    makeUpload();
-
-                } catch (Exception e) {
-                    makeUpload();
-                }
-            }
+            log("[SEARCHING CLIPS]");
+            List<String> clips = new ArrayList<>();
+            do {
+                clips = searchClips(urlGame);
+            } while (clips.isEmpty());
+            log(clips.size() + " clips found!");
+            video.setLinkClips(clips);
+            video.addLinksToDescription(game);
+            log("video links added to description");
+            JSONUtil.saveConfig(tempFileJSON, video);
+            log("metada saved on temp file -> " + tempFileJSON);
+            makeMovieByList(clips);
 
         } catch (IOException | InterruptedException e) {
             log(e.getMessage());
         }
     }
 
+    public static void makeMovieByList(List<String> clips) throws IOException, InterruptedException {
+        createTempPath();
+        log("download temp file created " + AVM.tempDownloadPath);
+        log("[DOWNLOAD FILES]");
+        makeDownload(clips);
+        // Copy files
+        log("download folder -> " + AVM.tempDownloadPath);
+        AfterEffectsUtil.copyFilesToPath(AVM.tempDownloadPath, true);
+        log("creating project");
+        createProject();
+        log("rendering project");
+        AfterEffectsUtil.renderTemplate();
+        log("[HANDBRAKE WORKFLOW]");
+        try {
+            String replace = settings.getFinalVideoPath().replace("finalVideo", "convertedFinalVideo");
+            settings.setFinalVideoConvertedPath(replace);
+            log("finalVideoConvertPath setted to" + replace);
+            log("Creating batch file");
+            String createTempBatEncodeFile = ScriptMaker.createTempBatEncodeFile(settings.getFinalVideoPath(), avm.AVM.settings.getFinalVideoConvertedPath());
+            log("Executing batch file");
+            HandbrakeUtil.convertFile(createTempBatEncodeFile);
+        } catch (InterruptedException e) {
+            log("Erro on script or convert file");
+        } finally {
+            try {
+                makeUpload();
+
+            } catch (Exception e) {
+                makeUpload();
+            }
+        }
+    }
+
+    private static void createClipByUrl() {
+        try {
+            String url = JOptionPane.showInputDialog("URL");
+            createVideoByTwitchClipPageUrl(url, "");
+        } catch (HeadlessException e) {
+            log(e.getMessage());
+        }
+
+    }
+
+    private static void createClipByList() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+
+    }
+
+    private static void openYoutubeVideoConfigCreatorGUI() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     public static void makeDownload(List<String> clips) throws InterruptedException {
         try {
             for (String string : clips) {
+
                 searchUTIL.downloadClip(string);
             }
         } catch (InterruptedException e) {
@@ -166,36 +241,23 @@ public class AVMWorkflow {
         }
     }
 
-    public static List<String> searchClips(String urlGame) throws FileNotFoundException {
-        List<String> listClipsByURL = searchUTIL.getListClipsByURL(urlGame, filesToDownload);
-        listClipsByURL.forEach((string) -> {
-            log("Link found " + string);
-        });
-        return listClipsByURL;
-    }
-
     public static void makeUpload() {
-        YoutubeVideo video;
         try {
             if (searchUTIL == null) {
                 searchUTIL = new TwitchSearchUTIL();
             }
-            video = JSONUtil.getVideoConfig(avm.AVM.settings.getVideoJsonFile());
-            video.addLinksToDescription();
-            video.setLinkClips(searchUTIL.links);
+            saveLinksOnDatabase();
             searchUTIL.doUpload(video);
-
-        } catch (FileNotFoundException | InterruptedException | AWTException ex) {
-            Logger.getLogger(AVMWorkflow.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | AWTException ex) {
+            log(ex.getMessage());
         }
     }
 
     public static void ifUploadError() {
-        YoutubeVideo video;
-        log("Not found! " + avm.AVM.settings.getVideoJsonFile());
-        System.out.println("Searching dor Youtube config JSON files on -> " + settings.getMainVideoPath());
+        log("Not found! " + settings.getVideoJsonFile());
+        log("Searching dor Youtube config JSON files on -> " + settings.getMainVideoPath());
         List<String> files = JSONUtil.searchFilesFrom(settings.getMainVideoPath(), ".json");
-        System.out.println("Select METADA Json file: ");
+        log("Select METADA Json file: ");
         int i = 0;
         for (String file : files) {
             System.out.println("[" + i + "] " + file);
@@ -208,28 +270,29 @@ public class AVMWorkflow {
         }
     }
 
-    private static void createClipByUrl() {
+    public static String createTempAfterEffectsScript() {
+        String fileName = settings.getAeScriptPath() + "\\" + UUID.randomUUID().toString().split("-")[0] + "Script.jsx";
+        log("creating after effects script -> " + fileName);
         try {
-            String url = JOptionPane.showInputDialog("URL");
-            createVideoByTwitchClipPageUrl(url);
-        } catch (HeadlessException e) {
+            ScriptMaker.createScript(settings.getAeScriptTemplate(), settings.getFilesToDownload(), fileName);
+            log("script created");
+        } catch (Exception e) {
             log(e.getMessage());
+        } finally {
+            File f = new File(fileName);
+            if (!f.exists()) {
+                createTempAfterEffectsScript();
+            }
+
         }
+        return fileName;
 
-    }
-
-    private static void createClipByList() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    private static void openYoutubeVideoConfigCreatorGUI() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     public static void createTempPath() {
         try {
             if (avm.AVM.tempDownloadPath == null) {
-                File f = new File(avm.AVM.settings.getMainVideoPath() + "//videos//VideoDownloadTempFolder" + new Date().getTime());
+                File f = new File(settings.getMainVideoPath() + "//videos//VideoDownloadTempFolder" + new Date().getTime());
                 if (!f.exists()) {
                     f.mkdir();
                 }
@@ -247,36 +310,68 @@ public class AVMWorkflow {
     }
 
     private static void createProject() {
-
-        deleteOldProjectFile();
-        new Thread(() -> {
-            try {
-                AfterEffectsUtil.createProjectByScript();
-            } catch (IOException | InterruptedException ex) {
-                Logger.getLogger(AVMWorkflow.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }).start();
+        Thread t = new Thread(() -> {
+            AfterEffectsUtil.createProjectByScript(createTempAfterEffectsScript());
+        });
         try {
-            Thread.sleep(45000);
-            AfterEffectsUtil.killAfterEffects();
-            File f = new File(avm.AVM.settings.getAfterEffectsProjectFile());
+            deleteOldProjectFile();
+            t.start();
+            log("waiting for project creation by after effects");
+            Thread.sleep(18000);
+            log("check video.aep file");
+            File f = new File(settings.getAfterEffectsProjectFile());
             if (!f.exists()) {
+                log("project creation erro");
                 createProject();
+
             } else {
                 log("Project created !");
             }
         } catch (InterruptedException ex) {
-            Logger.getLogger(AVMWorkflow.class.getName()).log(Level.SEVERE, null, ex);
+            log(ex.getMessage());
         }
     }
 
     private static void deleteOldProjectFile() {
         try {
-            File f = new File(avm.AVM.settings.getAfterEffectsProjectFile());
+            log("old project deleted from " + settings.getAfterEffectsProjectFile());
+            File f = new File(settings.getAfterEffectsProjectFile());
             f.delete();
         } catch (Exception e) {
             log("Erro on delete old project!");
         }
+    }
+
+    private static void saveLinksOnDatabase() {
+
+        try {
+            log("Saving links on database!");
+            LinkDatabase linkDatase = JSONUtil.getlinkDatase(settings.getVideoDatabseJSONFile());
+
+            for (String link : video.getLinkClips()) {
+                linkDatase.getLinks().add(link);
+            }
+
+            JSONUtil.saveLinkDatabase(settings.getVideoDatabseJSONFile(), linkDatase);
+        } catch (FileNotFoundException ex) {
+            log(ex.getMessage());
+        } catch (IOException ex) {
+            log(ex.getMessage());
+        }
+
+    }
+
+    public static List<String> searchClips(String urlGame) throws FileNotFoundException {
+        List<String> listClipsByURL = null;
+        try {
+            listClipsByURL = searchUTIL.getListClipsByURL(urlGame, settings.getFilesToDownload());
+            listClipsByURL.forEach((String string) -> {
+                log("Link found " + string);
+            });
+        } catch (FileNotFoundException e) {
+            log("0 clips found try again");
+        }
+        return listClipsByURL;
     }
 
 }

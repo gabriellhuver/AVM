@@ -11,8 +11,8 @@ package objects;
  */
 public class Settings {
 
-    public static final String loadingStr ="\n \n \n \n \n \n \n \n \n \n \n"+ 
-              "                                                                                                        \n"
+    public static final String loadingStr = "\n \n \n \n \n \n \n \n \n \n \n"
+            + "                                                                                                        \n"
             + "                                                                                                        \n"
             + "                                                                                                        \n"
             + "                                                                                                        \n"
@@ -54,9 +54,9 @@ public class Settings {
     private String afterEffectsProjectCreatorScriptFile;
     private String afterEffectsExec;
     private String afterEffectsProjectFile;
+    
     private String finalVideoPath;
     private String finalVideoConvertedPath;
-
     private String aeRenderExec;
 
     private String aeRenderCompositionName;
@@ -70,6 +70,28 @@ public class Settings {
     private String videoJsonFile;
 
     private int filesToDownload;
+
+    private String videoDatabseJSONFile;
+
+    private String aeScriptTemplate;
+
+    private String aeScriptPath;
+
+    public String getAeScriptPath() {
+        return aeScriptPath;
+    }
+
+    public void setAeScriptPath(String aeScriptPath) {
+        this.aeScriptPath = aeScriptPath;
+    }
+
+    public String getAeScriptTemplate() {
+        return aeScriptTemplate;
+    }
+
+    public void setAeScriptTemplate(String aeScriptTemplate) {
+        this.aeScriptTemplate = aeScriptTemplate;
+    }
 
     public int getFilesToDownload() {
         return filesToDownload;
@@ -97,6 +119,14 @@ public class Settings {
 
     public String getFinalVideoConvertedPath() {
         return finalVideoConvertedPath;
+    }
+
+    public String getVideoDatabseJSONFile() {
+        return videoDatabseJSONFile;
+    }
+
+    public void setVideoDatabseJSONFile(String videoDatabseJSONFile) {
+        this.videoDatabseJSONFile = videoDatabseJSONFile;
     }
 
     public void setFinalVideoConvertedPath(String finalVideoConvertedPath) {
@@ -225,7 +255,7 @@ public class Settings {
 
     @Override
     public String toString() {
-        return "Settings{" + "chromeDriver=" + chromeDriver + ", chromeUserData=" + chromeUserData + ", mainVideoPath=" + mainVideoPath + ", CompositionAEName=" + CompositionAEName + ", videoRenderFolder=" + videoRenderFolder + ", AssetsFolder=" + AssetsFolder + ", afterEffectsProjectCreatorScriptFile=" + afterEffectsProjectCreatorScriptFile + ", afterEffectsExec=" + afterEffectsExec + ", afterEffectsProjectFile=" + afterEffectsProjectFile + ", finalVideoPath=" + finalVideoPath + ", finalVideoConvertedPath=" + finalVideoConvertedPath + ", aeRenderExec=" + aeRenderExec + ", aeRenderCompositionName=" + aeRenderCompositionName + ", aeRenderOutputSettings=" + aeRenderOutputSettings + ", aeRenderRenderSettings=" + aeRenderRenderSettings + ", handBrakeExec=" + handBrakeExec + ", youtubeUploadUrl=" + youtubeUploadUrl + ", videoJsonFile=" + videoJsonFile + ", filesToDownload=" + filesToDownload + '}';
+        return "Settings{" + "chromeDriver=" + chromeDriver + ", chromeUserData=" + chromeUserData + ", mainVideoPath=" + mainVideoPath + ", CompositionAEName=" + CompositionAEName + ", videoRenderFolder=" + videoRenderFolder + ", AssetsFolder=" + AssetsFolder + ", afterEffectsProjectCreatorScriptFile=" + afterEffectsProjectCreatorScriptFile + ", afterEffectsExec=" + afterEffectsExec + ", afterEffectsProjectFile=" + afterEffectsProjectFile + ", finalVideoPath=" + finalVideoPath + ", finalVideoConvertedPath=" + finalVideoConvertedPath + ", aeRenderExec=" + aeRenderExec + ", aeRenderCompositionName=" + aeRenderCompositionName + ", aeRenderOutputSettings=" + aeRenderOutputSettings + ", aeRenderRenderSettings=" + aeRenderRenderSettings + ", handBrakeExec=" + handBrakeExec + ", youtubeUploadUrl=" + youtubeUploadUrl + ", videoJsonFile=" + videoJsonFile + ", filesToDownload=" + filesToDownload + ", videoDatabseJSONFile=" + videoDatabseJSONFile + '}';
     }
 
 }

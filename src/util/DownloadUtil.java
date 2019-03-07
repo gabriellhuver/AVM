@@ -1,6 +1,6 @@
 package util;
 
-import core.AVMWorkflow;
+import static core.AVMWorkflow.log;
 import java.io.BufferedInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -8,7 +8,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.DecimalFormat;
-import java.util.Random;
+import java.util.Date;
 
 public class DownloadUtil {
 
@@ -21,16 +21,15 @@ public class DownloadUtil {
         String fileName = fAddress.substring(slashIndex + 1);
 
         if (periodIndex >= 1 && slashIndex >= 0 && slashIndex < fAddress.length() - 1) {
-            AVMWorkflow.log("---------- File Download Started WAIT -------");
             download(fAddress, destinationDir, fileName);
+            log(fileName + " - > " + destinationDir);
         } else {
-            AVMWorkflow.log("path or file name error : " + fAddress + " - " + destinationDir);
+            log("path or file name error : " + fAddress + " - " + destinationDir);
         }
     }
 
     public static void download(String remotePath, String localPath, String filename) {
-        AVMWorkflow.log("---------- File Download Started WAIT -------");
-        AVMWorkflow.log("Downloading file " + remotePath + " - > " + localPath);
+        long currentTimeMillis = System.currentTimeMillis();
         BufferedInputStream in = null;
         FileOutputStream out = null;
         DecimalFormat df = new DecimalFormat("#.00");
@@ -39,13 +38,19 @@ public class DownloadUtil {
             URL url = new URL(remotePath);
             URLConnection conn = url.openConnection();
             int size = conn.getContentLength();
+            log("---------------");
+            log("[Download info]");
+            log("File name: " + filename);
+            log("Local Path: " + localPath);
+            log("Remote path: " + remotePath);
+            log("---------------");
 
             if (size < 0) {
-                AVMWorkflow.log("Could not get the file size");
+                log("Could not get the file size");
             } else {
                 double x = size / 1024;
                 String format = df.format((x / 1024));
-                AVMWorkflow.log("File size: " + format + " MB");
+                log("File size: " + format + " MB");
             }
 
             in = new BufferedInputStream(url.openStream());
@@ -63,30 +68,32 @@ public class DownloadUtil {
                     String format = df.format(prctg);
 
                     if (new Double(format) >= 1) {
-                        System.out.print("\rFile Download: | " + format + "% | " + remotePath + " -> " + localPath);
+                        System.out.print("\r" + new Date().toString() + ": File Download: | " + format + "% | " + filename + " ...");
                     }
                 }
             }
 
         } catch (MalformedURLException e1) {
-            e1.printStackTrace();
+            log(e1.getMessage());
         } catch (IOException e2) {
-            e2.printStackTrace();
+            log(e2.getMessage());
         } finally {
             if (in != null) {
                 try {
                     in.close();
                 } catch (IOException e3) {
-                    e3.printStackTrace();
+                    log(e3.getMessage());
                 }
             }
             if (out != null) {
                 try {
                     out.close();
                 } catch (IOException e4) {
-                    e4.printStackTrace();
+                    log(e4.getMessage());
                 }
             }
+            log("---");
+            log("Download success in " + (System.currentTimeMillis() - currentTimeMillis) / 1024 + " Seconds");
         }
     }
 

@@ -36,9 +36,6 @@ public class TwitchSearchUTIL {
         try {
             driver = WebDriverTool.setupDriver();
             driver.get(url);
-            // driver.findElement(By.xpath("//*[@id=\"root\"]/div/div[2]/div/main/div[1]/div[3]/div/div/div/div[2]/div[2]/div[1]/div[1]/div/div/div")).click();
-            // driver.findElement(By.xpath("//*[@id=\"root\"]/div/div[2]/div/main/div[1]/div[3]/div/div/div/div[2]/div[2]/div[1]/div[1]/div/div/div/div[2]/div[1]/div/div[3]/div/div/div[2]/div/label")).click();
-
             WebElement videoBox = driver
                     .findElement(By.xpath("//*[@id=\"root\"]/div/div[2]/div/main/div[1]/div[3]/div/div/div/div[3]"));
             List<WebElement> findElements = videoBox.findElements(By.tagName("a"));
@@ -46,7 +43,7 @@ public class TwitchSearchUTIL {
             for (WebElement webElement : findElements) {
                 if (webElement.getAttribute("href").contains("clip")) {
                     if (!Alllinks.contains(webElement.getAttribute("href"))) {
-                        if (i <= count) {
+                        if (i <= count && checkOnDatabase(webElement.getAttribute("href"))) {
                             Alllinks.add(webElement.getAttribute("href"));
                             i++;
                         }
@@ -59,7 +56,10 @@ public class TwitchSearchUTIL {
             AVMWorkflow.log(e.getMessage());
             driver.close();
         } finally {
-            driver.close();
+            try {
+                driver.close();
+            } catch (Exception e) {
+            }
 
         }
 
@@ -68,25 +68,22 @@ public class TwitchSearchUTIL {
     }
 
     public void downloadClip(String string) throws InterruptedException {
-        String attribute = getLinkAttr(string);
 
         try {
-            log(" download from url " + attribute);
+            String attribute = getLinkAttr(string);
+            log("download from url " + attribute);
             if (attribute.equals("")) {
                 downloadClip(string);
                 log("Download file url not found!");
 
                 throw new Exception("Download file url not found!");
-            }
-            if (!attribute.equals("")) {
+            } else {
                 DownloadUtil.fileDownload(attribute, AVM.tempDownloadPath);
 
-            } else {
-                log("search for mp4 link from twitch clip page failed");
-                downloadClip(string);
             }
+
         } catch (Exception e) {
-            log("Erro on download file " + attribute + " - " + AVM.tempDownloadPath);
+            log("Erro on download file " + AVM.tempDownloadPath);
             downloadClip(string);
         }
     }
@@ -101,7 +98,7 @@ public class TwitchSearchUTIL {
                     "//*[@id=\"root\"]/div/div[2]/div/main/div[2]/div[3]/div/div/div[2]/div/div[2]/div/div[1]/video"))
                     .getAttribute("src");
             return attribute;
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
             log("Error on getLinkAttr");
             return null;
         } finally {
@@ -131,7 +128,7 @@ public class TwitchSearchUTIL {
                     .sendKeys(video.getYoutubeVideoTittle());
             log("Video tittle OK!");
             String myText = "";
-            video.getDescription().stream().map((desc) -> {
+            video.getDescription().stream().map((String desc) -> {
                 driver.findElement(By.xpath("//*[@id=\"upload-item-0\"]/div[3]/div[2]/div/div/div[1]/div[3]/form/div[1]/fieldset[1]/div/label[2]/span/textarea"))
                         .sendKeys(desc + "\n");
                 return desc;
@@ -170,7 +167,7 @@ public class TwitchSearchUTIL {
                 text = driver.findElement(By.xpath("//*[@id=\"upload-item-0\"]/div[3]/div[1]/div[2]/div[2]/div[2]/span[1]/span")).getText();
                 timeLeft = driver.findElement(By.xpath("//*[@id=\"upload-item-0\"]/div[3]/div[1]/div[2]/div[2]/span")).getText();
                 percentage = driver.findElement(By.xpath("//*[@id=\"upload-item-0\"]/div[3]/div[1]/div[2]/div[2]/div[1]/span/span")).getText();
-                log("Upload STATUS: " + percentage + " " + timeLeft);
+                System.out.print("\rUpload STATUS: " + percentage + " " + timeLeft);
                 Thread.sleep(1500);
             }
             log("Youtube Upload video Completed! ");
@@ -180,12 +177,6 @@ public class TwitchSearchUTIL {
             JOptionPane.showMessageDialog(null, "VIDEO: " + video.getYoutubeVideoTittle() + " upload successful!");
 
             driver.findElement(By.xpath("//*[@id=\"upload-item-0\"]/div[3]/div[1]/div[1]/div/div/button")).click();
-            String userReturn = "";
-            log("Continue ?");
-            Scanner myScanner = new Scanner(System.in);
-            userReturn = myScanner.next();
-            driver.close();
-            AVMWorkflow.go();
 
         } catch (Exception e) {
             driver.close();
@@ -203,8 +194,28 @@ public class TwitchSearchUTIL {
                     break;
 
             }
+        } finally {
+            driver.close();
+            AVMWorkflow.go();
         }
 
+    }
+
+    private boolean checkOnDatabase(String linkToCompare) {
+        boolean rs = true;
+        try {
+            if (AVM.databaseLink != null) {
+                for (String link : AVM.databaseLink.getLinks()) {
+                    if (linkToCompare.equals(link)) {
+                        rs = false;
+                    }
+                }
+
+            }
+        } catch (Exception e) {
+            log(e.getMessage());
+        }
+        return rs;
     }
 
     private static final String YoutubeVideoTittleXPATH = "//*[@id=\"upload-item-0\"]"

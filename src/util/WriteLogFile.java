@@ -1,5 +1,6 @@
 package util;
 
+import static core.AVMWorkflow.log;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
@@ -16,8 +17,8 @@ public class WriteLogFile {
                 }
             }
         } catch (IOException e) {
-            System.out.println("Error on log Write!");
-            e.printStackTrace();
+            log("Error on log Write!");
+            
         }
     }
 }

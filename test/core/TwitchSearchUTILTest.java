@@ -23,15 +23,12 @@ public class TwitchSearchUTILTest {
     public TwitchSearchUTILTest() {
     }
 
-    //@Test
+    @Test
     public void testSomeMethod() {
 
-        try {
-            TwitchSearchUTIL iL = new TwitchSearchUTIL();
-            iL.downloadClip("https://www.twitch.tv/dizzy/clip/PricklyKnottyStingrayDxCat");
-        } catch (InterruptedException ex) {
-            Logger.getLogger(TwitchSearchUTILTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        TwitchSearchUTIL iL = new TwitchSearchUTIL();
+        AVMWorkflow.makeUpload();
+        //iL.downloadClip("https://www.twitch.tv/dizzy/clip/PricklyKnottyStingrayDxCat");
 
     }
 
@@ -47,11 +44,9 @@ public class TwitchSearchUTILTest {
             + "👉 Streamers do vídeo:\n"
             + "";
 
-    @Test
+    //@Test
     public void testSomeMethod2() throws FileNotFoundException {
         YoutubeVideo video = new YoutubeVideo();
-
-        video.setClipsPerComposition(7);
         List<String> links = new ArrayList<>();
         List<String> tags = new ArrayList<>();
         List<String> descL = new ArrayList<>();
@@ -64,11 +59,9 @@ public class TwitchSearchUTILTest {
         video.setYoutubeVideoTittle("Twitch compilation - #01");
         video.setConvertedFile("E://videos//convertedFinalVideo.mp4");
         video.setStatus("PRIVATE");
-        video.setRenderConfig("\"BestConfig\"");
-        video.setIntroFile("intro.mov");
         video.setProjectFile("E://videos//finalVideo.mov");
         video.setFileName("E://videos//finalVideo.mov");
-        JSONUtil.saveConfig("C://Temp//video.json", video);
-
+        JSONUtil.saveConfig("C://Temp//video4.json", video);
+        
     }
 }

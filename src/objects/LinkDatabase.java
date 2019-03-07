@@ -5,28 +5,28 @@
  */
 package objects;
 
-import java.util.HashMap;
 import java.util.List;
 
 /**
  *
  * @author gab00
  */
-public class UploadList {
+public class LinkDatabase {
+    private final String database = "database";
+    private List<String> links;
 
-    private HashMap<String, YoutubeVideo> videos;
-
-    public HashMap<String, YoutubeVideo> getVideos() {
-        return videos;
+    public List<String> getLinks() {
+        return links;
     }
 
-    public void setVideos(HashMap<String, YoutubeVideo> videos) {
-        this.videos = videos;
+    public void setLinks(List<String> links) {
+        this.links = links;
     }
 
     @Override
     public String toString() {
-        return "UploadList{" + "videos=" + videos + '}';
+        return "LinkDatabase{" + "links=" + links + '}';
     }
+    
 
 }

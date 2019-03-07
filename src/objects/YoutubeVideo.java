@@ -16,34 +16,45 @@ import java.util.List;
  */
 public class YoutubeVideo {
 
-    private String fileName;
-    private List<String> description;
     private String youtubeVideoTittle;
+
+    private List<String> description;
+
     private List<String> tags;
+
     private String status;
-    private String renderConfig;
+
+    private String fileName;
+
     private String projectFile;
-    private int clipsPerComposition;
-    private String introFile;
+
     private List<String> linkClips;
+
     private String convertedFile;
-    
-    public void addLinksToDescription() {
+
+    private String backupFile;
+
+    public String getBackupFile() {
+        return backupFile;
+    }
+
+    public void setBackupFile(String backupFile) {
+        this.backupFile = backupFile;
+    }
+
+    public void addLinksToDescription(String game) {
         //String desc = "Twitch Auto Upload example\\r\\nCreated By GH\\r\\n\\r\\n**********************************\\r\\n\\r\\nJava\\r\\nWebdriver Selenium\\r\\nAfter Effects CC 2018\\r\\n***********************************\\r\\nITS JUST A TEST!!!!!!\\r\\nList of social media profiles\\r\\nWebsite\\r\\nContact info (email, address, etc.)\\r\\nITS JUST A TEST!!!!!!\\r\\n***********************************\\r\\nITS JUST A TEST!!!!!!\\r\\nCredits";
 
-        String desc = "Best of Twitch Tibia Clips DATE";
+        String desc = "Best of Twitch " + game + " Clips";
         SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
 
         String dateString = format.format(new Date());
-        String link = "\n %link% ";
-        this.description = new ArrayList<>();
-        desc.replace("DATA", dateString);
-        StringBuilder st = new StringBuilder(desc);
-        for (String string : linkClips) {
-            st.append(link.replace("%link%", string));
-        }
-        description.add(st.toString());
 
+        this.description = new ArrayList<>();
+        for (String linkClip : linkClips) {
+            description.add(linkClip);
+        }
+        this.description.add(dateString);
     }
 
     public String getConvertedFile() {
@@ -54,36 +65,12 @@ public class YoutubeVideo {
         this.convertedFile = convertedFile;
     }
 
-    public String getRenderConfig() {
-        return renderConfig;
-    }
-
-    public void setRenderConfig(String renderConfig) {
-        this.renderConfig = renderConfig;
-    }
-
     public String getProjectFile() {
         return projectFile;
     }
 
     public void setProjectFile(String projectFile) {
         this.projectFile = projectFile;
-    }
-
-    public int getClipsPerComposition() {
-        return clipsPerComposition;
-    }
-
-    public void setClipsPerComposition(int clipsPerComposition) {
-        this.clipsPerComposition = clipsPerComposition;
-    }
-
-    public String getIntroFile() {
-        return introFile;
-    }
-
-    public void setIntroFile(String introFile) {
-        this.introFile = introFile;
     }
 
     public List<String> getLinkClips() {
@@ -97,8 +84,6 @@ public class YoutubeVideo {
     public String getFileName() {
         return fileName;
     }
-
-   
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
@@ -138,9 +123,7 @@ public class YoutubeVideo {
 
     @Override
     public String toString() {
-        return "YoutubeVideo{" + "fileName=" + fileName + ", description=" + description + ", youtubeVideoTittle=" + youtubeVideoTittle + ", tags=" + tags + ", status=" + status + ", renderConfig=" + renderConfig + ", projectFile=" + projectFile + ", clipsPerComposition=" + clipsPerComposition + ", introFile=" + introFile + ", linkClips=" + linkClips + ", convertedFile=" + convertedFile + '}';
+        return "YoutubeVideo{" + "youtubeVideoTittle=" + youtubeVideoTittle + ", description=" + description + ", tags=" + tags + ", status=" + status + ", fileName=" + fileName + ", projectFile=" + projectFile + ", linkClips=" + linkClips + ", convertedFile=" + convertedFile + '}';
     }
-    
-    
 
 }

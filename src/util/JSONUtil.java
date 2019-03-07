@@ -19,6 +19,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
+import objects.LinkDatabase;
 import objects.UploadList;
 
 /**
@@ -27,13 +28,44 @@ import objects.UploadList;
  */
 public class JSONUtil {
 
-    public static String saveListUpload(String jsonFilePath, List<UploadList> list) throws IOException {
+    public static String saveLinkDatabase(String jsonFilePath, LinkDatabase links) throws IOException {
+        log("Saving link database -> " + jsonFilePath);
+        Gson gson = new Gson();
+        String json = gson.toJson(links);
+        log(json);
+        try (Writer writer = new OutputStreamWriter(new FileOutputStream(jsonFilePath), "UTF-8")) {
+            gson.toJson(links, writer);
+            log(links.toString());
+            log("Link database refresh");
+        }
+
+        return jsonFilePath;
+
+    }
+
+    public static LinkDatabase getlinkDatase(String videoConfigJSONPath) throws FileNotFoundException {
+
+        Gson gson = new Gson();
+
+        try (Reader reader = new FileReader(videoConfigJSONPath)) {
+
+            LinkDatabase video = gson.fromJson(reader, LinkDatabase.class);
+            log("Loading Link database Config from -> " + videoConfigJSONPath);
+            log(video.toString());
+            return video;
+        } catch (IOException e) {
+            log(e.getMessage());
+            return null;
+        }
+    }
+
+    public static String saveListUpload(String jsonFilePath, UploadList list) throws IOException {
         Gson gson = new Gson();
         String json = gson.toJson(list);
         log(json);
         try (Writer writer = new OutputStreamWriter(new FileOutputStream(jsonFilePath), "UTF-8")) {
             gson.toJson(list, writer);
-            log("JSON FILE SAVED -> " + jsonFilePath);
+            log("UPLOAD LIST FILE SAVED -> " + jsonFilePath);
             log(list.toString());
 
         }
@@ -42,16 +74,29 @@ public class JSONUtil {
 
     }
 
+    public static UploadList getListUpload(String videoConfigJSONPath) throws FileNotFoundException {
+
+        Gson gson = new Gson();
+
+        try (Reader reader = new FileReader(videoConfigJSONPath)) {
+
+            UploadList video = gson.fromJson(reader, UploadList.class);
+            log("Loading List to upload from -> " + videoConfigJSONPath);
+            log(video.toString());
+            return video;
+        } catch (IOException e) {
+            log(e.getMessage());
+            return null;
+        }
+    }
+
     public static String saveConfig(String jsonFilePath, YoutubeVideo video) throws FileNotFoundException {
 
-        //1. Convert object to JSON string
         Gson gson = new Gson();
         String json = gson.toJson(video);
         log(json);
 
-        //2. Convert object to JSON string and save into a file directly
         try (Writer writer = new OutputStreamWriter(new FileOutputStream(jsonFilePath), "UTF-8")) {
-
             gson.toJson(video, writer);
             log("JSON FILE SAVED -> " + jsonFilePath);
             log(video.toString());
@@ -70,6 +115,7 @@ public class JSONUtil {
 
             YoutubeVideo video = gson.fromJson(reader, YoutubeVideo.class);
             log("Loading Video Config from -> " + videoConfigJSONPath);
+            log(video.toString());
             return video;
         } catch (IOException e) {
             log(e.getMessage());
@@ -97,6 +143,7 @@ public class JSONUtil {
                 }
             }
         }
+        log(fs.toString());
         return fs;
 
     }

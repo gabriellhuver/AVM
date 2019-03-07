@@ -6,7 +6,6 @@
 package util;
 
 import static avm.AVM.settings;
-import core.AVMWorkflow;
 import static core.AVMWorkflow.log;
 import java.io.BufferedReader;
 import java.io.File;
@@ -16,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,7 +30,7 @@ public class AfterEffectsUtil {
     public static void copyFilesToPath(String downloadFilesPath, boolean deleteTemp) {
         if (deleteTemp) {
             try {
-                log("Deleting temp files");
+                log("deleting temp files");
                 deleteTemporaryFiles();
 
             } catch (Exception e) {
@@ -45,12 +45,11 @@ public class AfterEffectsUtil {
     }
 
     public static void deleteTemporaryFiles() {
-        log("Deleting temporary files");
+        log("deleting temporary files");
         File deleteFilesFolder = new File(settings.getVideoRenderFolder());
         for (File object : deleteFilesFolder.listFiles()) {
             object.delete();
         }
-        log("Initing copy of files to " + settings.getVideoRenderFolder());
     }
 
     private static void makeCopy(String downloadFilesPath) {
@@ -59,9 +58,9 @@ public class AfterEffectsUtil {
         if (folder.exists()) {
             File[] listFiles = folder.listFiles();
             try {
-                log("Copy files");
+                log("[FILE COPY]");
                 copyFileUsingStream(new File(settings.getAssetsFolder() + "//intro.mov"), new File(settings.getVideoRenderFolder() + "//1.mov"));
-                log("Intro copied");
+                log("intro copied");
             } catch (IOException ex) {
                 Logger.getLogger(AfterEffectsUtil.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -88,22 +87,36 @@ public class AfterEffectsUtil {
             } catch (IOException ex) {
                 Logger.getLogger(AfterEffectsUtil.class.getName()).log(Level.SEVERE, null, ex);
             }
-            log("********* FILES PREPARED TO RENDER !!! *******************");
+            log("[FILES PREPARED TO RENDER]");
 
         } else {
             log("Render Aborted ! Folder downloded files does not exist! ");
         }
     }
 
-    public static void createProjectByScript() throws IOException, InterruptedException {
-        log("Creating After Effects project by Script " + settings.getAfterEffectsProjectCreatorScriptFile());
-        doCommandCreateProject(settings.getAfterEffectsExec(), settings.getAfterEffectsProjectCreatorScriptFile());
+    public static void createProjectByScript() {
+        try {
+            log("creating After Effects project by Script " + settings.getAfterEffectsProjectCreatorScriptFile());
+            doCommandCreateProject(settings.getAfterEffectsExec(), settings.getAfterEffectsProjectCreatorScriptFile());
+        } catch (IOException | InterruptedException ex) {
+            log(ex.getMessage());
+        }
+
+    }
+
+    public static void createProjectByScript(String script) {
+        try {
+            log("creating After Effects project by Script " + script);
+            doCommandCreateProject(settings.getAfterEffectsExec(), script);
+        } catch (IOException | InterruptedException ex) {
+            log(ex.getMessage());
+        }
 
     }
 
     public static void killAfterEffects() {
         try {
-            log("Killing After effects process!");
+            log("killing After effects process!");
             Runtime.getRuntime().exec("taskkill /F /IM AfterFX.exe /T");
 
         } catch (IOException ex) {
@@ -120,6 +133,7 @@ public class AfterEffectsUtil {
         String outPutTemplate = settings.getAeRenderOutputSettings();
         String RenderAESetings = settings.getAeRenderRenderSettings();
         log("loading render config");
+
         doCommandRender(path, proj, outPut, comp, RenderAESetings, outPutTemplate);
     }
 
@@ -142,10 +156,9 @@ public class AfterEffectsUtil {
 
             String s = null;
             while ((s = stdInput.readLine()) != null) {
-                System.out.println(s);
+                log(s);
             }
-            Thread.sleep(5000);
-            System.out.println("Adobe After Effects project created based on " + path + " template if had no errors kkkkkk");
+            log("Adobe After Effects project created based on " + path + " template if had no errors kkkkkk");
 
         } else {
             String userReturn = "";
@@ -184,7 +197,7 @@ public class AfterEffectsUtil {
 
         Runtime rt = Runtime.getRuntime();
         String[] commands = new String[]{path, "-project", proj, "-comp", comp, "-RStemplate", settings, "-output", outPut, "-OMtemplate", outputTemplate};
-        System.out.println("Command Line: " + commands.toString());
+        log("Command Line: " + Arrays.toString(commands));
         Process proc = rt.exec(commands);
         BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 
@@ -192,14 +205,11 @@ public class AfterEffectsUtil {
         String s = null;
         while ((s = stdInput.readLine()) != null) {
 
-            System.out.println(s);
+            log(s);
 
         }
-        
-        System.out.println("--------------------- Command OK ---------------------");
-        
-        
-        
+
+        log("--------------------- Render success ---------------------");
 
     }
 
@@ -217,10 +227,11 @@ public class AfterEffectsUtil {
             }
         } catch (IOException e) {
 
-            e.printStackTrace();
+            log(e.getMessage());
         } finally {
             is.close();
             os.close();
+            log("File copy success");
         }
     }
 
@@ -231,7 +242,7 @@ public class AfterEffectsUtil {
         if (folder.exists()) {
             File[] listFiles = folder.listFiles();
             try {
-                if (listFiles.length == AVMWorkflow.filesToDownload + 3) {
+                if (listFiles.length == settings.getFilesToDownload() + 3) {
                     r = true;
                 }
             } catch (Exception e) {
